@@ -1,0 +1,95 @@
+# Options
+Options -ExecCGI -Includes -Indexes +FollowSymLinks
+
+# Defaults
+AddDefaultCharset UTF-8
+AddType           text/x-component .htc
+FileETag          None
+ServerSignature   Off
+
+# Proper MIME type for all files
+AddType image/x-icon                  ico
+
+AddType font/truetype                 ttf
+AddType font/opentype                 otf
+
+# Media caching
+<IfModule mod_expires.c>
+	ExpiresActive On
+
+	ExpiresByType image/gif                "access plus 1 year"
+	ExpiresByType image/jpeg               "access plus 1 year"
+	ExpiresByType image/jpg                "access plus 1 year"
+	ExpiresByType image/png                "access plus 1 year"
+
+	ExpiresByType image/x-icon             "access plus 1 year"
+	ExpiresByType image/vnd.microsoft.icon "access plus 1 year"
+
+	ExpiresByType text/css                 "access plus 1 year"
+	ExpiresByType application/javascript   "access plus 1 year"
+	ExpiresByType application/x-javascript "access plus 1 year"
+	ExpiresByType text/javascript          "access plus 1 year"
+
+	ExpiresByType font/ttf                 "access plus 1 year"
+	ExpiresByType font/truetype            "access plus 1 year"
+	ExpiresByType font/opentype            "access plus 1 year"
+</IfModule>
+
+# Change sensitive headers
+<IfModule mod_headers.c>
+	Header unset Cache-Control
+	Header unset ETag
+	Header unset Vary
+	Header unset X-Powered-By
+
+	<FilesMatch "\.(flv|gif|ico|jpeg|jpg|pdf|png|swf)$">
+		Header set Cache-Control "public"
+	</FilesMatch>
+	<FilesMatch "\.(css|js)$">
+		Header set Cache-Control "private"
+		Header set Vary "Accept-Encoding"
+	</FilesMatch>
+
+	# Prevent caching on broken images
+	<FilesMatch "^noimg\.jpg$">
+		Header set Expires "Thu Jan 01 1970 01:00:00 GMT+0100"
+		Header set Cache-Control "no-cache"
+	</FilesMatch>
+
+	<FilesMatch "^noimg-(large|medium|ml|rectangle|small|xlarge|xsmall)\.jpg$">
+		Header set Expires "Thu Jan 01 1970 01:00:00 GMT+0100"
+		Header set Cache-Control "no-cache"
+	</FilesMatch>
+</IfModule>
+
+# Compression
+<IfModule mod_deflate.c>
+	# Force deflate for mangled headers developer.yahoo.com/blogs/ydn/posts/2010/12/pushing-beyond-gzipping/
+	<IfModule mod_setenvif.c>
+		<IfModule mod_headers.c>
+			SetEnvIfNoCase ^(Accept-EncodXng|X-cept-Encoding|X{15}|~{15}|-{15})$ ^((gzip|deflate)\s,?\s(gzip|deflate)?|X{4,13}|~{4,13}|-{4,13})$ HAVE_Accept-Encoding
+			RequestHeader append Accept-Encoding "gzip,deflate" env=HAVE_Accept-Encoding
+		</IfModule>
+	</IfModule>
+
+	# html, txt, css, js, json, xml, htc:
+	<IfModule filter_module>
+		FilterDeclare   COMPRESS
+		FilterProvider  COMPRESS  DEFLATE resp=Content-Type /text/(html|css|javascript|plain|x(ml|-component))/
+		FilterProvider  COMPRESS  DEFLATE resp=Content-Type /application/(javascript|json|xml|x-javascript)/
+		FilterChain     COMPRESS
+		FilterProtocol  COMPRESS  change=yes;byteranges=no
+	</IfModule>
+
+	<IfModule !mod_filter.c>
+		# Legacy versions of Apache
+		AddOutputFilterByType DEFLATE text/html text/plain text/css application/json
+		AddOutputFilterByType DEFLATE text/javascript application/javascript application/x-javascript 
+		AddOutputFilterByType DEFLATE text/xml application/xml text/x-component
+	</IfModule>
+
+	# Webfonts and svg:
+	<FilesMatch "\.(ttf|otf|eot|svg)$" >
+		SetOutputFilter DEFLATE
+	</FilesMatch>
+</IfModule>

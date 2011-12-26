@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="{$language}" xmlns:og="http://ogp.me/ns#">
+<head>
+	<meta charset="UTF-8" />
+	<title>{block title}{$title}{/block}</title>
+
+	{block styles}
+	<!--[if lt IE 9]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	<link rel="stylesheet" href="style.css" type="text/css" />
+	{$smarty.block.child}
+	{/block}
+
+	{block head}{/block}
+</head>
+<body class="{class}">
+<div id="bar"></div>
+<div id="wrapper">
+	<ul id="layout">
+		<li><a href="?layout=extended">Extended (content-sidebar)</a></li>
+		<li><a href="?layout=full">Full (menu-content-sidebar)</a></li>
+		<li><a href="?layout=simple">Simple (menu-content)</a></li>
+		<li><a href="?layout=wide">Wide (content)</a></li>
+	</ul>
+
+	<header id="header"></header>
+	{block content}<div id="content">{$smarty.block.child}</div>{/block}
+	{block menu    hide}<div id="menu">{$smarty.block.child}</div>{/block}
+	{block sidebar hide}<aside id="sidebar">{$smarty.block.child}</aside>{/block}
+	<footer id="footer"></footer>
+</div>
+
+{block scripts}{/block}
+</body>
+</html>
